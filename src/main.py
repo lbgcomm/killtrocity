@@ -1,7 +1,3 @@
-import sys
-import os
-
-import config
 import killfrenzy
 import kilimanjaro
 
