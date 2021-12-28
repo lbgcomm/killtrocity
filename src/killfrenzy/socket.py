@@ -11,7 +11,16 @@ class socket():
         self.socket = None
 
     async def connect(self):
-        self.socket = await websockets.connect("wss://" + config.cfg.get("kf_addr") + ":" + str(config.cfg.get("kf_port")), ssl=ssl.create_default_context())
+        ext = "ws"
+        ssl_opt = None
+
+        # Check for SSL.
+        if config.cfg.get("ssl") == True:
+            ext = "wss"
+            ssl_opt = ssl.create_default_context()
+
+        self.socket = await websockets.connect(ext + "://" + config.cfg.get("kf_addr") + ":" + str(config.cfg.get("kf_port")), ssl=ssl_opt)
+            
 
     async def send_data(self, data):
         if self.socket is None:
