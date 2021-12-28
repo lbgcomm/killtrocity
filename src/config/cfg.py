@@ -31,8 +31,8 @@ class Config():
 
     # Set default functions.
     def set_defaults(self):
-        self.set("kf_addr", "123.123.123.123")
-        self.set("kf_port", 8888)
+        self.set("kf_addr", "127.0.0.1")
+        self.set("kf_port", 8003)
         self.set("km_addr", "127.0.0.1")
         self.set("km_port", 8002)
         self.set("alive_timeout", 10)
