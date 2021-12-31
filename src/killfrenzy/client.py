@@ -2,25 +2,10 @@ import asyncio
 
 import json
 
-import config
 import kilimanjaro
 from .socket import *
 
-async def validate():
-    data = {}
-
-    data["type"] = "connect"
-    data["auth"] = 10041
-
-    print("Sending data!")
-    await kilimanjaro.socket_c.send_data_json(data)
-    await socket_c.send_data_json(data)
-
-    print("Data sent")
-
-    await socket_c.recv_data()
-
-def handle_data(data):
+async def handle_data(data):
     if data["type"] is None:
         return
     
@@ -36,83 +21,145 @@ def handle_data(data):
 
         # Write to Kilimanjaro config file.
         with open("/etc/kilimanjaro/kilimanjaro.json", "w") as file:
-            file.write(json_data["data"])
-    # Handle a singular update.
-    elif data["type"] == "update":
-        if data["name"] is not None:
-            if data["name"] == "conn_add":
-                print("[KF] Received connection add. Sending to KM socket.")
-            elif data["name"] == "conn_del":
-                print("[KF] Received connection delete. Sending to KM socket.")
-            elif data["name"] == "pp_add":
-                print("[KF] Received port punch add. Sending to KM socket.")
-            elif data["name"] == "pp_del":
-                print("[KF] Received port punch delete. Sending to KM socket.")
+            file.write(json_data)
 
-        # Send to KM socket (in JSON format).
-        kilimanjaro.socket_c.send_data_json(data)
-    
-    return
+    # Send to KM socket (in JSON format).
+    if kilimanjaro.socket_c.is_connected() is True:
+        try:
+            await kilimanjaro.socket_c.send_data_json(data)
+        except Exception as e:
+            print("[KF] handle_data() :: Failed to send data to KM.")
+            print(e)
 
-async def recv_messages():
+async def recv_updates():
     while True:
-        data = await socket_c.recv_data()
+        try:
+            data = await socket_c.recv_data()
+        except websockets.exceptions.ConnectionClosedError:
+            return
 
-        handle_data(data)
+        json_data = json.loads(data)
 
-async def request_full_update():
+        await handle_data(json_data)
+
+async def request_updates():
     while True:
         data = {}
         data["type"] = "full_update"
 
         await socket_c.send_data_json(data)
 
-        await asyncio.sleep(30.0)
+        await sleep(5)
 
-async def connect():
-    await socket_c.connect()
+async def sleep(time):
+    await asyncio.sleep(time)
 
-    print("Connected to Kill Frenzy!")
+async def send_stats():
+    while True:
+        try:
+            file = open("/etc/kilimanjaro/stats", "r")
+        except Exception:
+            sleep(1)
+
+            continue
+
+        lines = []
+
+        try:
+            lines = file.readlines()
+        except Exception as e:
+            print("[KF] send_stats() :: Failed to read stats file.")
+            print(e)
+
+            sleep(1)
+
+            continue
+
+        ret = {}
+        ret["type"] = "push_stats"
+        ret["data"] = {}
+
+        for line in lines:
+            info = line.split(':')
+
+            s_type = info[0].strip()
+            val = 0
+
+            if len(info) > 1:
+                val = info[1].strip()
+            
+            ret["data"][s_type] = val
+
+        #print("Sending stats => " + json.dumps(ret))
+        
+        await socket_c.send_data_json(ret)
+
+        await sleep(1)
 
 async def start():
     first_time = True
 
     # Create tasks.
-    validate_task = asyncio.create_task(validate(), name="validate")
-    recv_task = asyncio.create_task(recv_messages(), name="recv_messages")
-    request_full_update_task = asyncio.create_task(request_full_update(), name="request_full_update")
+    p1 = None
+    p2 = None
 
     # Create an infinite loop that checks if the socket is connected and reconnects if need to be.
     while True:
         # Check if we're connected.
         if socket_c.is_connected() == False:
             if first_time == False:
-                print("Kill Frenzy found offline. Reconnecting...")
+                print("[KF] Found offline. Reconnecting...")
+
+                # Kill threads.
+                try:
+                    if p1 is not None and p1.done() is not True:
+                        p1.cancel()
+                    if p2 is not None and p2.done() is not True:
+                        p2.cancel()
+                    if p3 is not None and p3.done() is not True:
+                        p3.cancel()
+                except Exception as e:
+                    print("[KF] start() :: Could not cancel tasks.")
+                    print(e)
+                    await sleep(10)
+
+                    continue
             else:
                 first_time = False
 
-                # Cancel all tasks if they aren't already.
-                validate_task.cancel()
-                recv_task.cancel()
-                request_full_update_task.cancel()
-
             try:
                 # Connect to Kill Frenzy's web socket.
-                await connect()
-
-                # Now that we're connected, validate.
-                done, pending = await asyncio.wait({validate_task})
-                
-                # Check if the validate task completed successfully.
-                if validate_task in done:
-                    # Now run the rest of the tasks.
-                    L = await asyncio.gather(recv_task, request_full_update_task)
-
+                await socket_c.connect()
             except Exception as e:
-                print("Failed to connect to Kill Frenzy.");
+                print("[KF] start() :: Failed to connect.");
                 print(e)
+                await sleep(10)
 
-        await asyncio.sleep(30)
+                continue
+
+            print("[KF] Connected!")
+
+            try:
+                p1 = asyncio.create_task(request_updates())
+                p2 = asyncio.create_task(recv_updates())
+                p3 = asyncio.create_task(send_stats())
+            except Exception as e:
+                print("[KF] start() :: At least one task failed at create_task().")
+                print (e)
+                await sleep(10)
+
+                continue
+
+            try:
+                tasks = await asyncio.gather(p1, p2, p3)
+            except Exception as e:
+                print("[KF] start() :: At least one task failed at gather().")
+                print(e)
+                await sleep(30)
+
+                continue
+
+        await sleep(30)
 
 def init():
     asyncio.run(start())

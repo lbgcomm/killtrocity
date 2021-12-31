@@ -1,11 +1,27 @@
 import killfrenzy
 import kilimanjaro
 
-import asyncio
+import time
+import threading
 
-async def main():
-    # Run each program as a new thread to allow for blocking, etc.
-    await asyncio.gather(asyncio.to_thread(kilimanjaro.init), asyncio.to_thread(killfrenzy.init))
+def kf_init():
+    killfrenzy.init()
+
+def km_init():
+    kilimanjaro.init()
+
+def main():
+    p1 = threading.Thread(target=kf_init)
+    p2 = threading.Thread(target=km_init)
+
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
+
+    while True:
+        time.sleep(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

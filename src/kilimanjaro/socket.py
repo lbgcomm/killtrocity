@@ -1,5 +1,4 @@
 import asyncio
-import websockets
 
 import json
 import ssl
@@ -13,32 +12,36 @@ class raw_socket():
     def __init__(self):
         self.socket = None
         self.connected = False
-        self.fails = 0
-
+        
     async def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((config.cfg.get("km_addr"), config.cfg.get("km_port")))
-        self.socket.setblocking(0)
+        self.socket.setblocking(False)
 
         self.connected = True
 
     async def send_data(self, data):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
-        self.socket.sendall(bytes(data, encoding='utf8'))
+        tosend = bytes(json.dumps(data), encoding='utf8')
+
+        self.socket.sendall(tosend)
 
     async def send_data_json(self, data):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
         data_json = json.dumps(data)
 
-        self.socket.sendall(bytes(data_json, encoding='utf8'))
+        tosend = bytes(data_json, encoding='utf8')
+
+        self.socket.sendall(tosend)
+
 
     async def recv_data(self):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
         ready = select.select([self.socket], [], [], config.cfg.get("alive_timeout"))
 
@@ -50,8 +53,12 @@ class raw_socket():
     async def is_alive(self):
         data = {}
         data["type"] = "ping"
+        data["data"] = [1, 3]
         
-        self.socket.sendall(bytes(json.dumps(data), encoding='utf8'))
+        await self.send_data(data)
+
+    async def close(self):
+        self.socket.close()
 
     def is_connected(self):
         return self.connected

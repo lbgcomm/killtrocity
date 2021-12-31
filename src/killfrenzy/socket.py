@@ -20,17 +20,16 @@ class socket():
             ssl_opt = ssl.create_default_context()
 
         self.socket = await websockets.connect(ext + "://" + config.cfg.get("kf_addr") + ":" + str(config.cfg.get("kf_port")), ssl=ssl_opt)
-            
 
     async def send_data(self, data):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
         await self.socket.send(data)
 
     async def send_data_json(self, data):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
         data_json = json.dumps(data)
 
@@ -38,7 +37,7 @@ class socket():
 
     async def recv_data(self):
         if self.socket is None:
-            raise Exception("Socket invalid")
+            return
 
         ret = await self.socket.recv()
 
