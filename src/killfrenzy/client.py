@@ -102,6 +102,7 @@ async def start():
     # Create tasks.
     p1 = None
     p2 = None
+    p3 = None
 
     # Create an infinite loop that checks if the socket is connected and reconnects if need to be.
     while True:
