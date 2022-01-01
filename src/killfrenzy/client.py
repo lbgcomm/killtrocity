@@ -59,7 +59,7 @@ async def send_stats():
         try:
             file = open("/etc/kilimanjaro/stats", "r")
         except Exception:
-            sleep(1)
+            await sleep(1)
 
             continue
 
