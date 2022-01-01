@@ -49,7 +49,7 @@ async def request_updates():
 
         await socket_c.send_data_json(data)
 
-        await sleep(5)
+        await sleep(30)
 
 async def sleep(time):
     await asyncio.sleep(time)

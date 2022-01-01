@@ -121,7 +121,7 @@ async def start():
             p1.start()
 
         # Sleep for 30 seconds.
-        await sleep(5)
+        await sleep(30)
 
 def init():
     asyncio.run(start())
