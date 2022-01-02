@@ -38,7 +38,6 @@ class raw_socket():
 
         self.socket.sendall(tosend)
 
-
     async def recv_data(self):
         if self.socket is None:
             return
@@ -46,7 +45,7 @@ class raw_socket():
         ready = select.select([self.socket], [], [], config.cfg.get("alive_timeout"))
 
         if ready[0]:
-            return self.socket.recv(1024)
+            return self.socket.recv(2048)
         else:
             return None
 
