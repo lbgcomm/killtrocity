@@ -33,6 +33,7 @@ async def handle_data(data):
     # Send to KF socket (in JSON format).
     if killfrenzy.socket_c.is_connected():
         try:
+            print("Sending " + json.dumps(info))
             await killfrenzy.socket_c.send_data_json(info)
         except Exception as e:
             print("[KM] handle_data() :: Failed sending data to KF.")
@@ -48,7 +49,7 @@ async def recv_updates():
         try:
             data = await socket_c.recv_data()
         except Exception as e:
-            print("[KM] recv_update() :: Failed to receive data.")
+            print("[KM] recv_updates() :: Failed to receive data.")
             print(e)
 
             await sleep(5)
