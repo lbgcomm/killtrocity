@@ -33,6 +33,8 @@ class socket():
 
         data_json = json.dumps(data)
 
+        print("Sending data from KF! " + data_json)
+
         await self.socket.send(data_json)
 
     async def recv_data(self):
