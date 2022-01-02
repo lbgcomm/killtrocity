@@ -42,7 +42,12 @@ class raw_socket():
         if self.socket is None:
             return
 
-        return self.socket.recv(2048)
+        ready = select.select([self.socket], [], [], config.cfg.get("alive_timeout"))
+
+        if ready[0]:
+            return self.socket.recv(2048)
+        else:
+            return None
 
     async def is_alive(self):
         data = {}
