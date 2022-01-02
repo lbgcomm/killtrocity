@@ -32,7 +32,7 @@ class socket():
             return
 
         data_json = json.dumps(data)
-        if data_json["type"] != "push_stats":
+        if data["type"] != "push_stats":
             print("Sending data from KF! " + data_json)
 
         await self.socket.send(data_json)
