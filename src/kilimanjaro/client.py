@@ -45,7 +45,15 @@ async def recv_updates():
         if socket_c.is_connected() is not True:
             break
 
-        data = await socket_c.recv_data()
+        try:
+            data = await socket_c.recv_data()
+        except Exception as e:
+            print("[KM] recv_update() :: Failed to receive data.")
+            print(e)
+
+            await sleep(5)
+
+            continue
 
         if data is not None:
             print("[KM] recv_updates() :: Received data off of KM socket!")
