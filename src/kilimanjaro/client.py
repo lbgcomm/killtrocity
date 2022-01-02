@@ -17,6 +17,7 @@ async def handle_data(data):
         info = json.loads(data)
     except Exception as e:
         print("[KM] handle_data() :: Error parsing JSON data.")
+        print(data)
         print(e)
 
         return
