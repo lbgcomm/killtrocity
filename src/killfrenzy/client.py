@@ -24,9 +24,9 @@ async def handle_data(data):
             file.write(json_data)
 
     # Send to KM socket (in JSON format).
-    if kilimanjaro.socket_c.is_connected() is True:
+    if kilimanjaro.client.is_connected() is True:
         try:
-            await kilimanjaro.socket_c.send_data_json(data)
+            await kilimanjaro.client.send_data_json(data)
         except Exception as e:
             print("[KF] handle_data() :: Failed to send data to KM.")
             print(e)
@@ -34,7 +34,7 @@ async def handle_data(data):
 async def recv_updates():
     while True:
         try:
-            data = await socket_c.recv_data()
+            data = await client.recv_data()
         except websockets.exceptions.ConnectionClosedError:
             return
 
@@ -47,7 +47,7 @@ async def request_updates():
         data = {}
         data["type"] = "full_update"
 
-        await socket_c.send_data_json(data)
+        await client.send_data_json(data)
 
         await sleep(30)
 
@@ -92,7 +92,7 @@ async def send_stats():
 
         #print("Sending stats => " + json.dumps(ret))
         
-        await socket_c.send_data_json(ret)
+        await client.send_data_json(ret)
 
         await sleep(1)
 
@@ -107,7 +107,7 @@ async def start():
     # Create an infinite loop that checks if the socket is connected and reconnects if need to be.
     while True:
         # Check if we're connected.
-        if socket_c.is_connected() == False:
+        if client.is_connected() == False:
             if first_time == False:
                 print("[KF] Found offline. Reconnecting...")
 
@@ -130,7 +130,7 @@ async def start():
 
             try:
                 # Connect to Kill Frenzy's web socket.
-                await socket_c.connect()
+                await client.connect()
             except Exception as e:
                 print("[KF] start() :: Failed to connect.");
                 print(e)

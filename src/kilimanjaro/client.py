@@ -21,6 +21,7 @@ async def handle_data(data):
         print(e)
 
         return
+        
     if "type" not in info:
         print("[KM] handle_data() :: Data has no type.")
 
@@ -32,10 +33,10 @@ async def handle_data(data):
         return
 
     # Send to KF socket (in JSON format).
-    if killfrenzy.socket_c.is_connected():
+    if killfrenzy.client.is_connected():
         try:
             print("Sending " + json.dumps(info))
-            await killfrenzy.socket_c.send_data_json(info)
+            await killfrenzy.client.send_data_json(info)
         except Exception as e:
             print("[KM] handle_data() :: Failed sending data to KF.")
             print(e)
@@ -43,28 +44,22 @@ async def handle_data(data):
             return
 
 async def recv_updates():
-    while True:
-        if socket_c.is_connected() is not True:
+    while not client.reader.at_eof():
+        if client.is_connected() is not True:
             break
 
         try:
-            data = await socket_c.recv_data()
+            data = await client.recv_data()
         except Exception as e:
             print("[KM] recv_updates() :: Failed to receive data.")
             print(e)
 
-            await sleep(5)
+            await client.close()
 
-            continue
+            break
 
         if data is not None:
-            print("[KM] recv_updates() :: Received data off of KM socket!")
             await handle_data(data)
-
-            await sleep(5)
-
-def recv_updates_thread():
-    asyncio.run(recv_updates())
 
 async def sleep(time):
     await asyncio.sleep(time)
@@ -73,28 +68,19 @@ async def start():
     first_time = True
 
     # Create tasks.
+    tasks = None
     p1 = None
 
     while True:
-        # Attempt keep alive if socket is seen as connected.
-        if socket_c.is_connected() == True:
-            try:
-                await socket_c.is_alive()
-            except Exception as e:
-                print("[KM] start() :: Keep alive failed...")
-                print(e)
-                
-                socket_c.set_connected(False)
-
         # If socket isn't connected, try to connect.
-        if socket_c.is_connected() == False:
+        if client.is_connected() == False:
             # See if this is our first time connecting.
             if first_time == False:
                 print("[KM] start() :: Connection offline. Reconnecting...")
                 
                 try:
                     if p1 is not None:
-                        p1.kill()
+                        p1.cancel()
                 except Exception as e:
                     pass
                 
@@ -102,7 +88,7 @@ async def start():
                 first_time = False
 
             try:
-                await socket_c.connect()
+                await client.connect()
             except Exception as e:
                 print("[KM] start() :: Failed to connect to Kilimanjaro.");
                 print(e)
@@ -117,7 +103,7 @@ async def start():
             print("[KM] Sending ping request.")
 
             try:
-                await socket_c.send_data("{\"type\": \"ping\", \"data\": {}}")
+                await client.send_data("{\"type\": \"ping\", \"data\": {}}")
             except Exception as e:
                 print("[KM] start() :: Failed to send ping request.")
                 print(e)
@@ -126,9 +112,9 @@ async def start():
 
                 continue
 
-            # Start receive thread.
-            p1 = threading.Thread(target=recv_updates_thread)
-            p1.start()
+            # Start receive task.
+            p1 = asyncio.create_task(recv_updates())
+            tasks = await asyncio.gather(p1)
 
         # Sleep for 30 seconds.
         await sleep(30)

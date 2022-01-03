@@ -6,7 +6,7 @@ import ssl
 
 import config
 
-class socket():
+class kf_socket():
     def __init__(self):
         self.socket = None
 
@@ -51,4 +51,4 @@ class socket():
 
         return self.socket.open
 
-socket_c = socket()
+client = kf_socket()

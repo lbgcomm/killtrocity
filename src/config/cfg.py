@@ -33,8 +33,7 @@ class Config():
     def set_defaults(self):
         self.set("kf_addr", "127.0.0.1")
         self.set("kf_port", 8003)
-        self.set("km_addr", "127.0.0.1")
-        self.set("km_port", 8002)
+        self.set("km_socket_path", "/etc/kilimanjaro/server.sock")
         self.set("alive_timeout", 10)
         self.set("alive_max_fails", 5)
         self.set("alive_interval", 5)

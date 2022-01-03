@@ -5,64 +5,53 @@ import ssl
 
 import config
 
-import socket
-import select
+import asyncio
 
-class raw_socket():
+class km_socket():
     def __init__(self):
         self.socket = None
         self.connected = False
+        self.reader = None
+        self.writer = None
         
     async def connect(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((config.cfg.get("km_addr"), config.cfg.get("km_port")))
-        self.socket.setblocking(False)
+        self.reader, self.writer = await asyncio.open_unix_connection(path=config.cfg.get("km_socket_path"))
 
         self.connected = True
 
     async def send_data(self, data):
-        if self.socket is None:
+        if self.writer is None or self.writer.is_closing():
             return
 
-        tosend = bytes(json.dumps(data), encoding='utf8')
-
-        self.socket.sendall(tosend)
+        tosend = bytes(data, encoding='utf8')
+        
+        self.writer.write(tosend)
+        await self.writer.drain()
 
     async def send_data_json(self, data):
-        if self.socket is None:
+        if self.writer is None or self.writer.is_closing() == True:
             return
 
         data_json = json.dumps(data)
 
         tosend = bytes(data_json, encoding='utf8')
 
-        self.socket.sendall(tosend)
+        self.writer.write(tosend)
+        await self.writer.drain()
 
     async def recv_data(self):
-        if self.socket is None:
-            return
+        data = await self.reader.read(2048)
 
-        ready = select.select([self.socket], [], [], config.cfg.get("alive_timeout"))
-
-        if ready[0]:
-            return self.socket.recv(2048)
-        else:
-            return None
-
-    async def is_alive(self):
-        data = {}
-        data["type"] = "ping"
-        data["data"] = [1, 3]
-        
-        await self.send_data(data)
+        return data.decode()
 
     async def close(self):
-        self.socket.close()
+        self.writer.close()
+        await self.writer.wait_closed()
 
     def is_connected(self):
-        return self.connected
+        if self.writer is None or self.writer.is_closing() == True:
+            return False
 
-    def set_connected(self, val: bool):
-        self.connected = val
+        return True 
 
-socket_c = raw_socket()
+client = km_socket()
