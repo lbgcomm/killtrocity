@@ -42,7 +42,7 @@ class km_socket():
     async def recv_data(self):
         data = await self.reader.readuntil(separator=b'\n')
 
-        return data.decode()
+        return data.decode().rstrip('\n')
 
     async def close(self):
         self.writer.close()
