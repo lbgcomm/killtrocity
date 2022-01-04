@@ -25,6 +25,7 @@ async def handle_data(data):
 
     # Send to KM socket (in JSON format).
     if kilimanjaro.client.is_connected() is True:
+        print("Attempting to send data to KM")
         try:
             await kilimanjaro.client.send_data_json(data)
         except Exception as e:
