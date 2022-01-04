@@ -25,6 +25,7 @@ class km_socket():
 
         tosend = bytes(data, encoding='utf8')
         
+        print("send_data() :: Executed")
         self.writer.write(tosend)
         await self.writer.drain()
 
@@ -36,6 +37,8 @@ class km_socket():
 
         tosend = bytes(data_json, encoding='utf8')
 
+
+        print("send_data_json() :: Executed")
         self.writer.write(tosend)
         await self.writer.drain()
 
