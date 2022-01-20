@@ -54,7 +54,12 @@ async def recv_updates():
             print("[KM] recv_updates() :: Failed to receive data.")
             print(e)
 
-            await client.close()
+            if client.is_connected():
+                try:
+                    await client.close()
+                except Exception as e:
+                    print("[KM] recv_updates() :: Found recv_update() exception, but received exception when closing client.")
+                    print(e)
 
             break
 
