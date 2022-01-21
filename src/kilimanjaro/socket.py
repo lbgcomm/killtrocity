@@ -23,9 +23,9 @@ class km_socket():
         if self.writer is None or self.writer.is_closing():
             return
 
-        tosend = bytes(data, encoding='utf8')
+        tosend = bytearray(data, encoding='utf8')
+        tosend += b'\n'
         
-        print("send_data() :: Executed")
         self.writer.write(tosend)
         await self.writer.drain()
 
@@ -35,12 +35,14 @@ class km_socket():
 
         data_json = json.dumps(data)
 
-        tosend = bytes(data_json, encoding='utf8')
+        tosend = bytearray(data_json, encoding='utf8')
+        tosend += b'\n'
 
-
-        print("send_data_json() :: Executed")
         self.writer.write(tosend)
-        await self.writer.drain()
+        try:
+            await self.writer.drain()
+        except Exception as e:
+            pass
 
     async def recv_data(self):
         data = await self.reader.readuntil(separator=b'\n')
@@ -56,5 +58,18 @@ class km_socket():
             return False
 
         return True 
+
+    async def stress_test(self, array_size=2048, cnt=50):
+        to_send = {}
+        to_send["type"] = "ping"
+        to_send["data"] = {}
+        to_send["data"]["random_data"] = []
+
+        for i in range(array_size):
+            to_send["data"]["random_data"].append(i)
+
+        for i in range(cnt):
+            await self.send_data_json(to_send) 
+
 
 client = km_socket()

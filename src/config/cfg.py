@@ -38,6 +38,9 @@ class Config():
         self.set("alive_max_fails", 5)
         self.set("alive_interval", 5)
         self.set("ssl", False)
+        self.set("stress", False)
+        self.set("stress_array_size", 4096)
+        self.set("stress_count", 50)
 
     # Retrieves CFG value.
     def get(self, key: str):

@@ -106,7 +106,7 @@ async def start():
 
             # Send ping request.
             print("[KM] Sending ping request.")
-
+            
             try:
                 await client.send_data("{\"type\": \"ping\", \"data\": {}}")
             except Exception as e:
@@ -116,6 +116,9 @@ async def start():
                 await sleep(10)
 
                 continue
+
+            if (config.cfg.get("stress")):
+                await client.stress_test(config.cfg.get("stress_array_size"), config.cfg.get("stress_count"))
 
             # Start receive task.
             p1 = asyncio.create_task(recv_updates())

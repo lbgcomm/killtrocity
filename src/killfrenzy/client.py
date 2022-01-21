@@ -39,7 +39,12 @@ async def recv_updates():
         except websockets.exceptions.ConnectionClosedError:
             return
 
-        json_data = json.loads(data)
+        try:
+            json_data = json.loads(data)
+        except Exception as e:
+            print("[KF] recv_updates() :: Failed to parse JSON.")
+            print("[KF] JSON Data => " + data)
+            print(e)
 
         await handle_data(json_data)
 
