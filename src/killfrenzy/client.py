@@ -144,6 +144,20 @@ async def start():
 
                 continue
 
+
+            # Check if KM is connected.
+            if kilimanjaro.client.is_connected():
+                to_send = {}
+                to_send["type"] = "push_xdp_status"
+                to_send["data"] = {}
+                to_send["data"]["status"] = True
+
+                try:
+                    await client.send_data_json(to_send)
+                except Exception as e:
+                    print("[KF] start() :: Error updating XDP status.")
+                    print(e)
+
             print("[KF] Connected!")
 
             try:

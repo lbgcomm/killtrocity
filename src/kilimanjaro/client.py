@@ -88,6 +88,17 @@ async def start():
                         p1.cancel()
                 except Exception as e:
                     pass
+
+                to_send = {}
+                to_send["type"] = "push_xdp_status"
+                to_send["data"] = {}
+                to_send["data"]["status"] = False
+
+                try:
+                    await killfrenzy.client.send_data_json(to_send)
+                except Exception as e:
+                    print("[KM] start() :: Error updating XDP status on offline.")
+                    print(e)
                 
             else:
                 first_time = False
