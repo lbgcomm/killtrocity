@@ -113,6 +113,18 @@ async def start():
 
                 continue
 
+            # Update status if available.
+            to_send = {}
+            to_send["type"] = "push_xdp_status"
+            to_send["data"] = {}
+            to_send["data"]["status"] = True
+
+            try:
+                await killfrenzy.client.send_data_json(to_send)
+            except Exception as e:
+                print("[KM] start() :: Error updating XDP status.")
+                print(e)
+
             print("[KM] Connected!")
 
             # Send ping request.

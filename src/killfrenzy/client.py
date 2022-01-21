@@ -144,7 +144,6 @@ async def start():
 
                 continue
 
-
             # Check if KM is connected.
             if kilimanjaro.client.is_connected():
                 to_send = {}
