@@ -5,6 +5,8 @@ import json
 import kilimanjaro
 from .socket import *
 
+import traceback
+
 async def handle_data(data):
     if data["type"] is None:
         return
@@ -65,7 +67,7 @@ async def send_stats():
         try:
             file = open("/etc/kilimanjaro/stats", "r")
         except Exception:
-            await asyncio.sleep(1)
+            await sleep(1)
 
             continue
 
@@ -77,7 +79,7 @@ async def send_stats():
             print("[KF] send_stats() :: Failed to read stats file.")
             print(e)
 
-            await asyncio.sleep(1)
+            await sleep(1)
 
             continue
 
@@ -100,7 +102,7 @@ async def send_stats():
         
         await client.send_data_json(ret)
 
-        await asyncio.sleep(1)
+        await sleep(1)
 
 async def start():
     first_time = True
@@ -165,7 +167,7 @@ async def start():
                 p3 = asyncio.create_task(send_stats())
             except Exception as e:
                 print("[KF] start() :: At least one task failed at create_task().")
-                print (e)
+                print(e)
                 await sleep(10)
 
                 continue
@@ -175,6 +177,7 @@ async def start():
             except Exception as e:
                 print("[KF] start() :: At least one task failed at gather().")
                 print(e)
+                print(traceback.format_exc())
                 await sleep(30)
 
                 continue
