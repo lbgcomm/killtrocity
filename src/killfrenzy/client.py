@@ -44,6 +44,8 @@ async def recv_updates():
             await sleep(1)
             continue
 
+        print("DATA RECEIVED => " + str(data))
+
         try:
             json_data = json.loads(data)
         except Exception as e:
