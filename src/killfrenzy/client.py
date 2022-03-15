@@ -103,7 +103,10 @@ async def send_stats():
 
         #print("Sending stats => " + json.dumps(ret))
         
-        await client.send_data_json(ret)
+        try:
+            await client.send_data_json(ret)
+        except websockets.exceptions.ConnectionClosedOK:
+            pass
 
         await sleep(1)
 
