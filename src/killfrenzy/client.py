@@ -8,7 +8,7 @@ from .socket import *
 import traceback
 
 async def handle_data(data):
-    if "code" is in data and "type" is in data:
+    if "code" in data and "type" in data:
         print("[KF] handle_data() :: Returned code => " + str(data["code"]) + ". Type => " + str(data["type"]) + ".")
 
         return
