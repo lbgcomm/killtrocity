@@ -12,7 +12,7 @@ async def handle_data(data):
         print("[KF] handle_data() :: Returned code => " + str(data["code"]) + ". Type => " + str(data["type"]) + ".")
 
         return
-        
+
     if "type" not in data:
         return
     
@@ -48,8 +48,6 @@ async def recv_updates():
         except websockets.exceptions.ConnectionClosedOK:
             await sleep(1)
             continue
-
-        print("DATA RECEIVED => " + str(data))
 
         try:
             json_data = json.loads(data)
