@@ -40,6 +40,9 @@ async def recv_updates():
             data = await client.recv_data()
         except websockets.exceptions.ConnectionClosedError:
             return
+        except websockets.exceptions.ConnectionClosedOK:
+            await sleep(1)
+            continue
 
         try:
             json_data = json.loads(data)
