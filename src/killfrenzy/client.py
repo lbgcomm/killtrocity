@@ -65,7 +65,7 @@ async def send_stats():
         try:
             file = open("/etc/kilimanjaro/stats", "r")
         except Exception:
-            await sleep(1)
+            await asyncio.sleep(1)
 
             continue
 
@@ -77,7 +77,7 @@ async def send_stats():
             print("[KF] send_stats() :: Failed to read stats file.")
             print(e)
 
-            sleep(1)
+            await asyncio.sleep(1)
 
             continue
 
@@ -100,7 +100,7 @@ async def send_stats():
         
         await client.send_data_json(ret)
 
-        await sleep(1)
+        await asyncio.sleep(1)
 
 async def start():
     first_time = True
