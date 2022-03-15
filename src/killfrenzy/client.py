@@ -8,10 +8,10 @@ from .socket import *
 import traceback
 
 async def handle_data(data):
-    if data["type"] is None:
+    if "type" not in data:
         return
     
-    if data["data"] is None:
+    if "data" not in data:
         return
 
     # Handle a full config update.
