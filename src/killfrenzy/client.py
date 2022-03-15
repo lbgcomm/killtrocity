@@ -58,7 +58,10 @@ async def request_updates():
         data = {}
         data["type"] = "full_update"
 
-        await client.send_data_json(data)
+        try:
+            await client.send_data_json(data)
+        except websockets.exceptions.ConnectionClosedOK:
+            pass
 
         await sleep(30)
 
