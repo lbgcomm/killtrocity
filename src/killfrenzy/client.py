@@ -107,7 +107,10 @@ async def send_stats():
             if len(info) > 1:
                 val = info[1].strip()
             
-            ret["data"][s_type] = val
+            if s_type == "cpu_load":
+                ret["data"][s_type] = int(val)
+            else:
+                ret["data"][s_type] = val
 
         #print("Sending stats => " + json.dumps(ret))
         
